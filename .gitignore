@@ -1,0 +1,28 @@
+# Node.js dependencies
+node_modules/
+
+# Environment variables
+.env
+
+# WhatsApp session auth/cache files
+.wwebjs_auth/
+.wwebjs_cache/
+sessions.json
+
+# App data (complaints, installations, etc.)
+*.csv
+
+# VS Code settings (optional)
+.vscode/
+
+# OS metadata
+.DS_Store
+Thumbs.db
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# QR code image
+phonepe_qr.jpeg
