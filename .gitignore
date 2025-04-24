@@ -1,9 +1,6 @@
 # Node.js dependencies
 node_modules/
 
-# Environment variables
-.env
-
 # WhatsApp session auth/cache files
 .wwebjs_auth/
 .wwebjs_cache/
