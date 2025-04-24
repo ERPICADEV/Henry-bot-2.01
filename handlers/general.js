@@ -33,8 +33,8 @@ Be very formal like you are talking to a boss
       body: JSON.stringify({
         model: OPENROUTER_model,
         messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userQuestion }
+          { role: 'user', content: userQuestion },
+          { role: 'system', content: systemPrompt }
         ],
         temperature: 0.5
       })
@@ -47,6 +47,7 @@ Be very formal like you are talking to a boss
       await client.sendMessage(sender, answer);
     } else {
       await client.sendMessage(sender, "❌ Sorry, I couldn’t get the answer. Please try again.");
+      console.error('❌ No answer received from OpenRouter API:', data);
     }
   } catch (err) {
     console.error('❌ Error answering general question:', err.message);
@@ -54,4 +55,5 @@ Be very formal like you are talking to a boss
   }
 }
 
-module.exports = handleGeneralQuestion;
+module.exports = handleGeneralQuestion; 
+
