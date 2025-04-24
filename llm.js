@@ -3,9 +3,42 @@
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 require('dotenv').config();
 
-const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
-const OPENROUTER_model = process.env.OPENROUTER_model
+const OPENROUTER_model = process.env.OPENROUTER_model || "meta-llama/llama-4-maverick:free";
+const PROVISIONING_KEY = process.env.OPENROUTER_PROVISIONING_KEY;
+
+// Get fresh API key from provisioning key
+async function getNewApiKey() {
+  try {
+    const res = await fetch("https://openrouter.ai/api/v1/keys", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${PROVISIONING_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        name: "HenryBot AutoKey",
+        label: "runtime-auto",
+        limit: 10000,
+      }),
+    });
+
+    const data = await res.json();
+    if (data.key) return data.key;
+    console.error("OpenRouter: Failed to get new key", data);
+    return null;
+  } catch (err) {
+    console.error("OpenRouter: Error fetching key", err);
+    return null;
+  }
+}
+
+// Main function to detect intent
 async function detectIntent(message) {
+  const OPENROUTER_API_KEY = await getNewApiKey();
+  if (!OPENROUTER_API_KEY) {
+    return "general"; // fallback if key fetch fails
+  }
+
   const prompt = `
 You are Henry Bot 2.0, assistant for Kaish Aqua Vista (a water purifier rental company).
 
@@ -27,12 +60,9 @@ Examples:
 - "QR bhejo payment karni hai" → payment
 - "rental fee kitna hai" → general
 
-
-
-
 Message: "${message}"
 Intent:
-  `.trim();
+`.trim();
 
   try {
     const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
@@ -51,7 +81,7 @@ Intent:
     const data = await res.json();
     const intent = data.choices?.[0]?.message?.content?.toLowerCase().trim();
 
-    return ['complaint', 'installation', 'payment', 'general',].includes(intent) ? intent : 'general';
+    return ['complaint', 'installation', 'payment', 'general'].includes(intent) ? intent : 'general';
   } catch (err) {
     console.error('Intent detection failed:', err);
     return 'general';
