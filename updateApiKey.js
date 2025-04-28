@@ -124,12 +124,12 @@ if (fs.existsSync(envPath)) {
   envContent = fs.readFileSync(envPath, 'utf-8');
 }
 
-// Overwrite the existing API_KEY value with only the last extracted API key
-envContent = envContent.replace(/API_KEY=.*/, `API_KEY=${apiKey}`);
+// Overwrite the existing OPENROUTER_API_KEY value with only the last extracted API key
+envContent = envContent.replace(/OPENROUTER_API_KEY=.*/, `OPENROUTER_API_KEY=${apiKey}`);
 
-// If API_KEY is not in .env, add it
-if (!envContent.includes('API_KEY=')) {
-  envContent += `\nAPI_KEY=${apiKey}\n`;
+// If OPENROUTER_API_KEY is not in .env, add it
+if (!envContent.includes('OPENROUTER_API_KEY=')) {
+  envContent += `\nOPENROUTER_OPENROUTER_API_KEY=${apiKey}\n`;
 }
 
 fs.writeFileSync(envPath, envContent, 'utf-8');

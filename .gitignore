@@ -5,7 +5,8 @@ node_modules/
 .wwebjs_auth/
 .wwebjs_cache/
 sessions.json
-
+# userdate
+user-data/
 # App data (complaints, installations, etc.)
 *.csv
 

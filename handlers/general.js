@@ -86,7 +86,7 @@ Be very formal like you are talking to a boss
       await client.sendMessage(sender, answer);
     } else {
       await client.sendMessage(sender, "❌ Sorry, I couldn’t get the answer. Please try again.");
-      console.error('❌ No answer received from OpenRouter API.');
+      console.error('❌ No answer received from OpenRouter API.',err.message);
     }
   } catch (err) {
     console.error('❌ Error answering general question:', err.message);
