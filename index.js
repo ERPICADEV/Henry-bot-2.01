@@ -6,7 +6,7 @@ const detectIntent = require('./llm');
 const handleComplaint = require('./handlers/complaint');
 const handleInstallRequest = require('./handlers/install');
 const handleGeneralInquiry = require('./handlers/general');
-
+const generateOpenRouterApiKey = require('./updateApiKey')
 
 const sessions = {}; // Store session data
 
@@ -75,9 +75,11 @@ if (sessions[sender] && sessions[sender].type === 'complaint') {
     case 'general':
       await handleGeneralInquiry(client, msg);
       break;
-
+    case 'rate_limited':
+      await generateOpenRouterApiKey ()
+    break;
     default:
-      msg.reply('Sorry, I didn’t understand that. Type "pay", "install", or "complaint".');
+      msg.reply('Sorry there is some error from our side for any detail please contact owner +917982652982');
   }
 
 });

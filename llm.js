@@ -4,7 +4,8 @@ const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fet
 require('dotenv').config();
 
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
-const OPENROUTER_model = process.env.OPENROUTER_model
+const OPENROUTER_model = process.env.OPENROUTER_model;
+
 async function detectIntent(message) {
   const prompt = `
 You are Henry Bot 2.0, assistant for Kaish Aqua Vista (a water purifier rental company).
@@ -27,9 +28,6 @@ Examples:
 - "QR bhejo payment karni hai" → payment
 - "rental fee kitna hai" → general
 
-
-
-
 Message: "${message}"
 Intent:
   `.trim();
@@ -48,12 +46,21 @@ Intent:
       })
     });
 
-    const data = await res.json();
+    const raw = await res.text();
+
+    // Check if the response includes error code 429
+    const match = raw.match(/"code":\s*(\d+)/);
+    if (match && match[1] === '429') {
+      console.error('⛔ Rate limit exceeded (429).');
+      return 'rate_limited'; // optional custom return for your bot to handle differently
+    }
+
+    const data = JSON.parse(raw);
     const intent = data.choices?.[0]?.message?.content?.toLowerCase().trim();
 
-    return ['complaint', 'installation', 'payment', 'general',].includes(intent) ? intent : 'general';
+    return ['complaint', 'installation', 'payment', 'general','rate_limited'].includes(intent) ? intent : 'general';
   } catch (err) {
-    console.error('Intent detection failed:', err);
+    console.error('❌ Intent detection failed:', err);
     return 'general';
   }
 }

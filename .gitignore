@@ -9,10 +9,12 @@ sessions.json
 user-data/
 # App data (complaints, installations, etc.)
 *.csv
-
+# auth.json
+auth.json
 # VS Code settings (optional)
 .vscode/
-
+#.env
+.env
 # OS metadata
 .DS_Store
 Thumbs.db
