@@ -6,34 +6,6 @@ require('dotenv').config();
 const ENV_PATH = path.join(__dirname, '..', '.env');
 let OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 const OPENROUTER_model = process.env.OPENROUTER_model;
-const OPENROUTER_PROVISIONING_KEY = process.env.OPENROUTER_PROVISIONING_KEY;
-
-async function regenerateApiKey() {
-  try {
-    const res = await fetch('https://openrouter.ai/api/v1/auth/key', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${OPENROUTER_PROVISIONING_KEY}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ duration: "7d" })
-    });
-
-    const data = await res.json();
-    const newKey = data.key;
-
-    if (newKey) {
-      const envContents = fs.readFileSync(ENV_PATH, 'utf8');
-      const updated = envContents.replace(/OPENROUTER_API_KEY=.*/g, `OPENROUTER_API_KEY=${newKey}`);
-      fs.writeFileSync(ENV_PATH, updated);
-
-      OPENROUTER_API_KEY = newKey;
-      console.log('🔁 Regenerated OpenRouter API key!');
-    }
-  } catch (error) {
-    console.error('❌ Failed to regenerate API key:', error.message);
-  }
-}
 
 async function askOpenRouter(question, systemPrompt) {
   const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
@@ -86,7 +58,7 @@ Be very formal like you are talking to a boss
       await client.sendMessage(sender, answer);
     } else {
       await client.sendMessage(sender, "❌ Sorry, I couldn’t get the answer. Please try again.");
-      console.error('❌ No answer received from OpenRouter API.',err.message);
+      console.error('❌ No answer received from OpenRouter API. Full response:', data);
     }
   } catch (err) {
     console.error('❌ Error answering general question:', err.message);
