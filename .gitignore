@@ -3,7 +3,8 @@ node_modules/
 
 # Environment variables
 .env
-
+# adding user-data/ to gitignore
+user-data/
 # WhatsApp session auth/cache files
 .wwebjs_auth/
 .wwebjs_cache/
