@@ -1,21 +1,20 @@
 # Node.js dependencies
 node_modules/
 
-# Environment variables
-.env
-# adding user-data/ to gitignore
-user-data/
 # WhatsApp session auth/cache files
 .wwebjs_auth/
 .wwebjs_cache/
 sessions.json
-
+# userdate
+user-data/
 # App data (complaints, installations, etc.)
 *.csv
-
+# auth.json
+auth.json
 # VS Code settings (optional)
 .vscode/
-
+#.env
+.env
 # OS metadata
 .DS_Store
 Thumbs.db
