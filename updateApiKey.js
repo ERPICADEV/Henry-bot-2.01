@@ -12,7 +12,7 @@ function generateRandomKeyName() {
 async function generateOpenRouterApiKey() {
   let browser, context;
   try {
-    const browserArgs = { headless: false };
+    const browserArgs = { headless: true };
     browser = await chromium.launch(browserArgs);
 
     const contextOptions = fs.existsSync(SESSION_PATH)
