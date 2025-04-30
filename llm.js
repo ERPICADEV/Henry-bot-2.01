@@ -1,68 +1,94 @@
-// llm.js
-
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 require('dotenv').config();
+const generateOpenRouterApiKey = require('./updateApiKey');
 
-const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
-const OPENROUTER_model = process.env.OPENROUTER_model;
+let currentApiKey = process.env.OPENROUTER_API_KEY;
 
-async function detectIntent(message) {
+function refreshApiKeyFromEnv() {
+  try {
+    currentApiKey = process.env.OPENROUTER_API_KEY;
+    console.log('API key refreshed from .env file');
+    return currentApiKey;
+  } catch (err) {
+    console.error('Error refreshing API key:', err);
+    return null;
+  }
+}
+
+async function rotateApiKey() {
+  console.log('Rotating API key...');
+  try {
+    const newKey = await generateOpenRouterApiKey();
+    if (newKey) {
+      currentApiKey = newKey;
+      console.log('API key rotated successfully');
+      return true;
+    } else {
+      console.error('Failed to generate new API key');
+      refreshApiKeyFromEnv();
+      return false;
+    }
+  } catch (err) {
+    console.error('Error rotating API key:', err);
+    return false;
+  }
+}
+
+async function detectIntent(message, retryCount = 0) {
   const prompt = `
 You are Henry Bot 2.0, assistant for Kaish Aqua Vista (a water purifier rental company).
 
-Users might speak in Hindi, English, or Hinglish (mixed). Understand their message and classify it into one of the following intents:
-- "complaint": if the user is reporting an issue or problem with the purifier.
-- "installation": if the user wants to book a new purifier installation at home.
-- "payment": if the user asks about making a payment or requests a QR code.
-- "general": if the user is asking about fees, rental cost, owner details, or any business-related information that is not a complaint, installation request, or payment.
-
-Only return one word: complaint, installation, payment, general, or cancel.
+Classify the user message into: complaint, installation, payment, general, or cancel.
 
 Examples:
 - "How much is the installation fee?" → general
 - "Send me the QR code" → payment
-- "My RO isn’t working" → complaint
-- "I want a new purifier installed" → installation
+- "My RO isn't working" → complaint
 - "mera RO kaam nahi kar raha" → complaint
 - "installation karwana hai" → installation
-- "QR bhejo payment karni hai" → payment
-- "rental fee kitna hai" → general
 
 Message: "${message}"
-Intent:
-  `.trim();
+Intent:`.trim();
 
   try {
     const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+        'Authorization': `Bearer ${currentApiKey}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: OPENROUTER_model,
+        model: 'meta-llama/llama-3-8b-instruct:nitro-maverick',
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.2
       })
     });
 
-    const raw = await res.text();
-
-    // Check if the response includes error code 429
-    const match = raw.match(/"code":\s*(\d+)/);
-    if (match && match[1] === '429') {
-      console.error('⛔ Rate limit exceeded (429).');
-      return 'rate_limited'; // optional custom return for your bot to handle differently
+    if ([401, 429].includes(res.status)) {
+      console.error(`API error: ${res.status}. ${await res.text()}`);
+      if (retryCount < 2) {
+        await rotateApiKey();
+        return detectIntent(message, retryCount + 1);
+      }
+      return 'general';
     }
 
-    const data = JSON.parse(raw);
+    const data = await res.json();
     const intent = data.choices?.[0]?.message?.content?.toLowerCase().trim();
+    return ['complaint', 'installation', 'payment', 'general'].includes(intent) ? intent : 'general';
 
-    return ['complaint', 'installation', 'payment', 'general','rate_limited'].includes(intent) ? intent : 'general';
   } catch (err) {
-    console.error('❌ Intent detection failed:', err);
+    console.error('Intent detection failed:', err);
+    if (retryCount < 2) {
+      await rotateApiKey();
+      return detectIntent(message, retryCount + 1);
+    }
     return 'general';
   }
 }
 
 module.exports = detectIntent;
+module.exports.rotateApiKey = rotateApiKey;
+module.exports.refreshApiKeyFromEnv = refreshApiKeyFromEnv;
+module.exports.getCurrentApiKey = () => currentApiKey;
+module.exports.regenerateApiKey = rotateApiKey;

@@ -49,7 +49,6 @@ async function generateOpenRouterApiKey() {
     console.log('✅ Create inside modal clicked');
 
     await page.waitForSelector('text=Your new key:', { state: 'visible', timeout: 15000 });
-    await page.screenshot({ path: 'api-key-modal.png' });
 
     let apiKey = null;
     try {
