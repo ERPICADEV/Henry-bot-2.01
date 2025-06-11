@@ -26,5 +26,4 @@ It handles:
 
 ---
 
-## 📁 Folder Structure
 
